@@ -1,4 +1,7 @@
-GWashington 83 77 54 
-JAdams 86 69 90
-BNuriman 90 90 90
-NALex 49 40 51
+AAbylai 49 49 49 
+NAlexsandra 95 95 95
+BNuriman 90 95 90
+AZhakupov 49 40 51
+GUlasova 90 90 90
+BShahrizada 90 90 90
+

@@ -1,0 +1,4 @@
+GWashington 83 77 54 
+JAdams 86 69 90
+BNuriman 90 90 90
+NALex 49 40 51

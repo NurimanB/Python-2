@@ -1,5 +1,6 @@
 import tkinter as tk
 from tkinter import messagebox
+import math
 
 # Utility functions to perform matrix operations
 
@@ -37,25 +38,6 @@ def determinant_ref(matrix):
     
     return det
 
-def determinant_laplace(matrix):
-    """Calculate determinant using Laplace expansion."""
-    n = len(matrix)
-    
-    if n == 1:
-        return matrix[0][0]
-    
-    if n == 2:
-        return matrix[0][0] * matrix[1][1] - matrix[0][1] * matrix[1][0]
-    
-    det = 0
-    for col in range(n):
-        cofactor_matrix = [[matrix[i][j] for j in range(len(matrix)) if j != col]
-                           for i in range(len(matrix)) if i != 0]
-        sign = (-1) ** col
-        det += sign * matrix[0][col] * determinant_laplace(cofactor_matrix)
-    
-    return det
-
 def sarrus_rule(matrix):
     """Calculate determinant using Sarrus' Rule (only for 3x3 matrices)."""
     if len(matrix) != 3 or len(matrix[0]) != 3:
@@ -72,9 +54,9 @@ def sarrus_rule(matrix):
     return (a + b + c) - (d + e + f)
 
 def eigenvalue_determinant(matrix):
-    """Calculate eigenvalues for 3x3 matrices."""
+    """Calculate eigenvalues for 2x2 and 3x3 matrices."""
     if len(matrix) == 2:
-        # For 2x2 matrix (already works fine)
+        # For 2x2 matrix
         a, b = matrix[0][0], matrix[0][1]
         c, d = matrix[1][0], matrix[1][1]
         
@@ -87,20 +69,40 @@ def eigenvalue_determinant(matrix):
         return [eigenvalue1, eigenvalue2]
     
     elif len(matrix) == 3:
-        # Characteristic polynomial: λ^3 + bλ^2 + cλ + d = 0
-        a = matrix[0][0]
-        b = matrix[1][1]
-        c = matrix[2][2]
-        trace = a + b + c
+        # Coefficients of the characteristic polynomial λ^3 + bλ^2 + cλ + d = 0
+        trace = matrix[0][0] + matrix[1][1] + matrix[2][2]
         determinant = sarrus_rule(matrix)
         
-        # For simplicity, we'll return approximate eigenvalues using trace and determinant
-        # These are not exact, but can be used as estimates.
-        eigenvalue1 = trace / 3 + 1  # Approximation for λ1
-        eigenvalue2 = trace / 3 - 1  # Approximation for λ2
-        eigenvalue3 = determinant / (trace - eigenvalue1 - eigenvalue2)  # λ3 based on det
+        # Sum of products of principal minors
+        minor_sum = (matrix[0][0] * matrix[1][1] +
+                     matrix[1][1] * matrix[2][2] +
+                     matrix[0][0] * matrix[2][2] -
+                     matrix[0][1] * matrix[1][0] -
+                     matrix[1][2] * matrix[2][1] -
+                     matrix[0][2] * matrix[2][0])
         
-        return [eigenvalue1, eigenvalue2, eigenvalue3]
+        # Coefficients of characteristic polynomial
+        p = -trace
+        q = minor_sum
+        r = -determinant
+        
+        # Solve cubic equation λ^3 + pλ^2 + qλ + r = 0 using Cardano's method
+        A = (3*q - p**2) / 3
+        B = (2*p**3 - 9*p*q + 27*r) / 27
+        C = (B**2) / 4 + (A**3) / 27
+        
+        if C > 0:
+            C_sqrt = C ** 0.5
+            u = (-B / 2 + C_sqrt) ** (1/3)
+            v = (-B / 2 - C_sqrt) ** (1/3)
+            eigenvalue1 = u + v - p / 3
+            return [eigenvalue1]
+        else:
+            theta = (math.acos(-B / (2 * (-A / 3) ** 1.5))) / 3
+            eigenvalue1 = 2 * (-A / 3) ** 0.5 * math.cos(theta) - p / 3
+            eigenvalue2 = 2 * (-A / 3) ** 0.5 * math.cos(theta + (2 * math.pi / 3)) - p / 3
+            eigenvalue3 = 2 * (-A / 3) ** 0.5 * math.cos(theta + (4 * math.pi / 3)) - p / 3
+            return [eigenvalue1, eigenvalue2, eigenvalue3]
 
 def matrix_addition(matrix1, matrix2):
     """Calculate matrix addition."""
@@ -182,12 +184,23 @@ def solve_eigenvector(matrix, eigenvalue):
     
     # Use Gaussian elimination to solve for the eigenvector
     if n == 2:
-        x = -augmented_matrix[0][1] / augmented_matrix[0][0]
-        return [x, 1]
+        # For 2x2 matrix: Solve the equation (A - λI)v = 0
+        if augmented_matrix[0][0] != 0:
+            x = -augmented_matrix[0][1] / augmented_matrix[0][0]
+            return [x, 1]
+        else:
+            return [1, 0]
     elif n == 3:
         # Solve (A - λI)v = 0 for 3x3 using Gaussian elimination
-        x = augmented_matrix[0][2] / augmented_matrix[0][0]
-        y = -augmented_matrix[1][2] / augmented_matrix[1][1]
+        # Perform Gaussian elimination to find the solution
+        if augmented_matrix[0][0] != 0:
+            x = augmented_matrix[0][2] / augmented_matrix[0][0]
+        else:
+            x = 1  # Free variable in case of singular rows
+        if augmented_matrix[1][1] != 0:
+            y = -augmented_matrix[1][2] / augmented_matrix[1][1]
+        else:
+            y = 1  # Free variable in case of singular rows
         return [x, y, 1]
     return None
 
@@ -286,8 +299,6 @@ class MatrixCalculatorApp:
                 method = self.method_var.get()
                 if method == "REF":
                     det = determinant_ref(matrix1)
-                elif method == "Laplace":
-                    det = determinant_laplace(matrix1)
                 elif method == "Sarrus" and self.rows1 == 3:
                     det = sarrus_rule(matrix1)
                 elif method == "Eigenvalue" and self.rows1 in [2, 3]:
@@ -327,8 +338,11 @@ class MatrixCalculatorApp:
                 messagebox.showerror("Invalid Input", "Matrix must be square for eigenvector.")
             else:
                 eigenvalues = eigenvalue_determinant(matrix1)
-                eigenvectors = [solve_eigenvector(matrix1, ev) for ev in eigenvalues]
-                result = f"Eigenvectors: {eigenvectors}"
+                if eigenvalues is not None:
+                    eigenvectors = [solve_eigenvector(matrix1, ev) for ev in eigenvalues]
+                    result = f"Eigenvectors: {eigenvectors}"
+                else:
+                    messagebox.showerror("Calculation Error", "Failed to compute eigenvalues.")
         
         if result is not None:
             self.display_result(result)

@@ -177,7 +177,7 @@ def lu_decomposition(matrix):
     return L, U
 
 def solve_eigenvector(matrix, eigenvalue):
-    """Find eigenvector for a given eigenvalue."""
+    """Find eigenvector for a given eigenvalue using Gaussian elimination."""
     n = len(matrix)
     identity = [[1 if i == j else 0 for j in range(n)] for i in range(n)]
     augmented_matrix = [[matrix[i][j] - eigenvalue * identity[i][j] for j in range(n)] for i in range(n)]
@@ -192,17 +192,25 @@ def solve_eigenvector(matrix, eigenvalue):
             return [1, 0]
     elif n == 3:
         # Solve (A - λI)v = 0 for 3x3 using Gaussian elimination
-        # Perform Gaussian elimination to find the solution
-        if augmented_matrix[0][0] != 0:
-            x = augmented_matrix[0][2] / augmented_matrix[0][0]
+        # We set the last component of the vector to 1 (free variable)
+        
+        if augmented_matrix[2][2] != 0:
+            z = 1  # Free variable set to 1
+            y = -augmented_matrix[1][2] / augmented_matrix[1][1] * z
+            x = (augmented_matrix[0][2] * z + augmented_matrix[0][1] * y) / -augmented_matrix[0][0]
+        elif augmented_matrix[1][1] != 0:
+            # In case the last row doesn't reduce well, we treat middle row similarly
+            z = 1
+            y = -augmented_matrix[1][2] / augmented_matrix[1][1] * z
+            x = 1  # Free variable
         else:
-            x = 1  # Free variable in case of singular rows
-        if augmented_matrix[1][1] != 0:
-            y = -augmented_matrix[1][2] / augmented_matrix[1][1]
-        else:
-            y = 1  # Free variable in case of singular rows
-        return [x, y, 1]
-    return None
+            # Set the first variable as 1 and solve accordingly if upper rows are problematic
+            z = 1
+            y = 1
+            x = 1
+        
+        return [x, y, z]
+
 
 # Tkinter GUI Application
 

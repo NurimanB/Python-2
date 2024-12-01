@@ -10,6 +10,16 @@ most_points_player = data.loc[data['PTS'].idxmax(), ['Player', 'PTS']]
 # Task 2
 avg_pts_per_team = data.groupby('Tm')['PTS'].mean().sort_values(ascending=False)
 
+# Plotting
+plt.figure(figsize=(12, 6))
+avg_pts_per_team.plot(kind='bar', color='skyblue')
+plt.title('Average Points Per Game Across Teams')
+plt.xlabel('Team')
+plt.ylabel('Average Points')
+plt.xticks(rotation=45)
+plt.grid(axis='y')
+plt.show()
+
 # Task 3
 top_5_players = data.nlargest(5, 'PTS')[['Player', 'PTS', 'G']]
 top_5_data = data[data['Player'].isin(top_5_players['Player'])]
@@ -29,6 +39,16 @@ plt.show()
 
 # Task 4
 avg_fouls_per_team = data.groupby('Tm')['PF'].mean().sort_values(ascending=False)
+
+# Plotting
+plt.figure(figsize=(12, 6))
+avg_fouls_per_team.plot(kind='bar', color='salmon')
+plt.title('Average Fouls Committed Per Team')
+plt.xlabel('Team')
+plt.ylabel('Average Fouls')
+plt.xticks(rotation=45)
+plt.grid(axis='y')
+plt.show()
 
 # Task 5
 data['Total_Contribution'] = data['PTS'] + data['AST']

@@ -12,7 +12,7 @@ avg_pts_per_team = data.groupby('Tm')['PTS'].mean().sort_values(ascending=False)
 
 # Plotting
 plt.figure(figsize=(12, 6))
-avg_pts_per_team.plot(kind='bar', color='skyblue')
+avg_pts_per_team.plot(kind='bar', color='#d3410d')
 plt.title('Average Points Per Game Across Teams')
 plt.xlabel('Team')
 plt.ylabel('Average Points')
@@ -42,7 +42,7 @@ avg_fouls_per_team = data.groupby('Tm')['PF'].mean().sort_values(ascending=False
 
 # Plotting
 plt.figure(figsize=(12, 6))
-avg_fouls_per_team.plot(kind='bar', color='salmon')
+avg_fouls_per_team.plot(kind='bar', color='#d3410d')
 plt.title('Average Fouls Committed Per Team')
 plt.xlabel('Team')
 plt.ylabel('Average Fouls')

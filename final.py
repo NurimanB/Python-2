@@ -2,8 +2,6 @@ import tkinter as tk
 from tkinter import messagebox
 import math
 
-# Utility functions to perform matrix operations
-
 def copy_matrix(matrix):
     """Create a deep copy of a matrix."""
     return [row[:] for row in matrix]
@@ -213,7 +211,6 @@ def solve_eigenvector(matrix, eigenvalue):
 
 
 # Tkinter GUI Application
-
 class MatrixCalculatorApp:
     def __init__(self, root):
         self.root = root
